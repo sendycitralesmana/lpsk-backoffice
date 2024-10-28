@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  DIAJUKAN
+  DINAIKAN
+  DITURUNKAN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  image     String?
+  role      Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  roleId    String?
+  news      News[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Role {
+  id        String   @id @default(cuid())
+  name      String
+  users     User[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("roles")
+}
+
+model ServiceCategory {
+  id        String    @id @default(cuid())
+  name      String
+  services  Service[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("service_categories")
+}
+
+model Service {
+  id                String           @id @default(cuid())
+  documentName      String           @map("document_name")
+  documentUrl       String           @map("document_url")
+  status            Status           @default(DIAJUKAN)
+  serviceCategory   ServiceCategory? @relation(fields: [serviceCategoryId], references: [id], onDelete: SetNull)
+  serviceCategoryId String?          @map("service_category_id")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@map("services")
+}
+
+model NewsCategory {
+  id        String   @id @default(cuid())
+  name      String
+  news      News[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("news_categories")
+}
+
+model News {
+  id             String        @id @default(cuid())
+  title          String
+  content        String        @db.Text
+  cover          String?
+  document       String?
+  image          String?
+  video          String?
+  status         Status        @default(DIAJUKAN)
+  newsCategory   NewsCategory? @relation(fields: [newsCategoryId], references: [id], onDelete: SetNull)
+  newsCategoryId String?       @map("news_category_id")
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId         String?       @map("user_id")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@map("news")
+}
+
+model ApplicationCategory {
+  id           String        @id @default(cuid())
+  name         String
+  applications Application[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updated      DateTime      @updatedAt @map("updated_at")
+
+  @@map("application_categories")
+}
+
+model Application {
+  id                    String               @id @default(cuid())
+  title                 String
+  cover                 String?
+  url                   String?
+  applicationCategory   ApplicationCategory? @relation(fields: [applicationCategoryId], references: [id], onDelete: SetNull)
+  applicationCategoryId String?              @map("application_category_id")
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updated               DateTime             @updatedAt @map("updated_at")
+
+  @@map("applications")
+}
+
+model ProfileCategory {
+  id        String    @id @default(cuid())
+  name      String
+  profiles  Profile[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updated   DateTime  @updatedAt @map("updated_at")
+
+  @@map("profile_categories")
+}
+
+model Profile {
+  id                String           @id @default(cuid())
+  name              String
+  description       String           @db.Text
+  foto              String?
+  profileCategory   ProfileCategory? @relation(fields: [profileCategoryId], references: [id], onDelete: SetNull)
+  profileCategoryId String?          @map("profile_category_id")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updated           DateTime         @updatedAt @map("updated_at")
+
+  @@map("profiles")
+}
